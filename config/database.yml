@@ -18,11 +18,14 @@ default: &default
   # For details on connection pooling, see Rails configuration guide
   # https://guides.rubyonrails.org/configuring.html#database-pooling
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  host: <%= ENV['DB_HOST'] %>
+  username: <%= ENV['DB_USERNAME'] %>
+  password: <%= ENV['DB_PASSWORD'] %>
 
 
 development:
   <<: *default
-  database: nirmana_be_development
+  database: nirmana_be
 
   # The specified database role being used to connect to PostgreSQL.
   # To create additional roles in PostgreSQL see `$ createuser --help`.
@@ -81,18 +84,18 @@ test:
 production:
   primary: &primary_production
     <<: *default
-    database: nirmana_be_production
+    database: nirmana_be_prod
     username: nirmana_be
     password: <%= ENV["NIRMANA_BE_DATABASE_PASSWORD"] %>
   cache:
     <<: *primary_production
-    database: nirmana_be_production_cache
+    database: nirmana_be_prod_cache
     migrations_paths: db/cache_migrate
   queue:
     <<: *primary_production
-    database: nirmana_be_production_queue
+    database: nirmana_be_prod_queue
     migrations_paths: db/queue_migrate
   cable:
     <<: *primary_production
-    database: nirmana_be_production_cable
+    database: nirmana_be_prod_cable
     migrations_paths: db/cable_migrate
