@@ -42,13 +42,10 @@ class EmailVerificationToken < ApplicationRecord
     invalidated_at.present?
   end
 
-  def verify!
+  def mark_as_verified!
     return false if expired? || verified?
-    
-    transaction do
-      update!(verified_at: Time.current)
-      user.verify_email!
-    end
+
+    update!(verified_at: Time.current)
   end
 
   def expires_in
