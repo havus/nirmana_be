@@ -19,6 +19,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_06_154731) do
     t.string "token", limit: 255, null: false
     t.datetime "expires_at", precision: nil, null: false
     t.datetime "verified_at", precision: nil
+    t.datetime "invalidated_at", precision: nil
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["expires_at"], name: "index_email_verification_tokens_on_expires_at"

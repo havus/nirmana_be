@@ -1,0 +1,14 @@
+Welcome to Nirmana!
+
+Hello <%= @user.first_name || @user.email %>,
+
+Thank you for signing up for Nirmana! To complete your registration, please verify your email address by visiting the following link:
+
+<%= @verification_url %>
+
+This verification link will expire in 24 hours.
+
+If you didn't create an account with us, please ignore this email.
+
+---
+This is an automated message, please do not reply to this email.

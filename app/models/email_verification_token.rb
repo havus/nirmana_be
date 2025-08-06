@@ -6,18 +6,18 @@ class EmailVerificationToken < ApplicationRecord
   validates :expires_at, presence: true
 
   # Callbacks
-  before_create :generate_token
-  before_create :set_expiration
+  before_validation :generate_token, :set_expiration
 
   # Scopes
-  scope :valid, -> { where('expires_at > ? AND verified_at IS NULL', Time.current) }
+  scope :valid, -> { where('expires_at > ? AND verified_at IS NULL AND invalidated_at IS NULL', Time.current) }
   scope :expired, -> { where('expires_at <= ?', Time.current) }
   scope :verified, -> { where.not(verified_at: nil) }
+  scope :invalidated, -> { where.not(invalidated_at: nil) }
 
   # Class methods
   def self.create_for_user(user)
-    # Invalidate any existing tokens
-    where(user: user).valid.destroy_all
+    # Invalidate any existing valid tokens (keeps history)
+    where(user: user).valid.update_all(invalidated_at: Time.current)
     create!(user: user)
   end
 
@@ -26,8 +26,8 @@ class EmailVerificationToken < ApplicationRecord
   end
 
   # Instance methods
-  def valid?
-    expires_at > Time.current && verified_at.nil?
+  def valid_token?
+    expires_at > Time.current && verified_at.nil? && invalidated_at.nil?
   end
 
   def expired?
@@ -36,6 +36,10 @@ class EmailVerificationToken < ApplicationRecord
 
   def verified?
     verified_at.present?
+  end
+
+  def invalidated?
+    invalidated_at.present?
   end
 
   def verify!

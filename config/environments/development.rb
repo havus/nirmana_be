@@ -38,6 +38,14 @@ Rails.application.configure do
   # Set localhost to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
 
+  config.action_mailer.smtp_settings = {
+    user_name: ENV['SMTP_USER_NAME'],
+    password: ENV['SMTP_PASSWORD'],
+    address: ENV['SMTP_ADDRESS'],
+    port: ENV['SMTP_PORT'],
+    authentication: ENV['SMTP_AUTHENTICATION'].presence || :plain,
+  }
+
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
 

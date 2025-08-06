@@ -16,7 +16,7 @@ class User < ApplicationRecord
   validates :avatar_url, length: { maximum: 500 }
 
   # Callbacks
-  before_create :generate_uid
+  before_validation :generate_uid, on: :create
   before_save :normalize_email
 
   # Scopes

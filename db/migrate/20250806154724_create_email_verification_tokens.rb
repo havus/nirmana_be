@@ -5,6 +5,7 @@ class CreateEmailVerificationTokens < ActiveRecord::Migration[8.0]
       t.string :token, null: false, limit: 255
       t.timestamp :expires_at, null: false
       t.timestamp :verified_at
+      t.timestamp :invalidated_at
 
       t.timestamps
     end
