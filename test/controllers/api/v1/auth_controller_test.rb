@@ -68,4 +68,67 @@ class Api::V1::AuthControllerTest < ActionDispatch::IntegrationTest
     response_body = JSON.parse(response.body)
     assert_equal 'Invalid or expired token', response_body['error']
   end
+
+  # Sign In Tests
+  test "should sign in with valid credentials" do
+    post api_v1_sign_in_path, params: { 
+      email: @user.email, 
+      password: 'password123' 
+    }
+    
+    assert_response :ok
+    
+    response_body = JSON.parse(response.body)
+    assert_equal 'Signed in successfully', response_body['message']
+    assert_equal @user.id, response_body['user']['id']
+    assert_equal @user.email, response_body['user']['email']
+    assert_not_nil response_body['session']['token']
+    assert_not_nil response_body['session']['expires_at']
+  end
+
+  test "should return error for invalid email" do
+    post api_v1_sign_in_path, params: { 
+      email: 'nonexistent@example.com', 
+      password: 'password123' 
+    }
+    
+    assert_response :unauthorized
+    
+    response_body = JSON.parse(response.body)
+    assert_equal 'Invalid credentials', response_body['error']
+  end
+
+  test "should return error for invalid password" do
+    post api_v1_sign_in_path, params: { 
+      email: @user.email, 
+      password: 'wrongpassword' 
+    }
+    
+    assert_response :unauthorized
+    
+    response_body = JSON.parse(response.body)
+    assert_equal 'Invalid credentials', response_body['error']
+  end
+
+  test "should return error for missing email" do
+    post api_v1_sign_in_path, params: { 
+      password: 'password123' 
+    }
+    
+    assert_response :bad_request
+    
+    response_body = JSON.parse(response.body)
+    assert_equal 'Email and password are required', response_body['error']
+  end
+
+  test "should return error for missing password" do
+    post api_v1_sign_in_path, params: { 
+      email: @user.email 
+    }
+    
+    assert_response :bad_request
+    
+    response_body = JSON.parse(response.body)
+    assert_equal 'Email and password are required', response_body['error']
+  end
 end

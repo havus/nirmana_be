@@ -24,7 +24,7 @@ class PasswordResetToken < ApplicationRecord
   end
 
   # Instance methods
-  def valid?
+  def valid_token?
     expires_at > Time.current && used_at.nil?
   end
 

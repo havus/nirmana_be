@@ -64,10 +64,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_06_154731) do
     t.string "avatar_url", limit: 500
     t.text "bio"
     t.datetime "email_verified_at", precision: nil
+    t.integer "status", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["created_at"], name: "index_users_on_created_at"
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["status"], name: "index_users_on_status"
     t.index ["uid"], name: "index_users_on_uid", unique: true
   end
 

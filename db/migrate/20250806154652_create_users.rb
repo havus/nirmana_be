@@ -11,6 +11,7 @@ class CreateUsers < ActiveRecord::Migration[8.0]
       t.string :avatar_url, limit: 500
       t.text :bio
       t.timestamp :email_verified_at
+      t.integer :status, default: 0, null: false
 
       t.timestamps
     end
@@ -18,5 +19,6 @@ class CreateUsers < ActiveRecord::Migration[8.0]
     add_index :users, :uid, unique: true
     add_index :users, :email, unique: true
     add_index :users, :created_at
+    add_index :users, :status
   end
 end

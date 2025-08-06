@@ -26,6 +26,7 @@ class UserLoginService
   end
 
   def call
+    return failure_result(['Email and password are required']) if @email.blank? || @password.blank?
     return failure_result(['Invalid credentials']) unless user&.authenticate(@password)
     return failure_result(['Account is deactivated']) unless user.active?
     
@@ -47,9 +48,10 @@ class UserLoginService
   end
 
   def create_session!
-    @session = user.create_session!(
+    @session = @user.user_sessions.create!(
       ip_address: @ip_address,
-      user_agent: @user_agent
+      user_agent: @user_agent,
+      expires_at: 7.days.from_now
     )
   end
 

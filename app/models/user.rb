@@ -1,6 +1,9 @@
 class User < ApplicationRecord
   has_secure_password
 
+  # Enums
+  enum :status, { inactive: 0, active: 1 }, default: :inactive
+
   # Associations
   has_many :password_reset_tokens, dependent: :destroy
   has_many :email_verification_tokens, dependent: :destroy
@@ -32,15 +35,7 @@ class User < ApplicationRecord
   end
 
   def verify_email!
-    update!(email_verified_at: Time.current)
-  end
-
-  def create_session!(ip_address: nil, user_agent: nil, expires_in: 7.days)
-    user_sessions.create!(
-      ip_address: ip_address,
-      user_agent: user_agent,
-      expires_at: expires_in.from_now
-    )
+    update!(email_verified_at: Time.current, status: :active)
   end
 
   private

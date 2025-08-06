@@ -6,8 +6,7 @@ class UserSession < ApplicationRecord
   validates :expires_at, presence: true
 
   # Callbacks
-  before_create :generate_session_token
-  before_create :set_expiration
+  before_validation :generate_session_token, :set_expiration
   after_initialize :touch_last_accessed
 
   # Scopes
