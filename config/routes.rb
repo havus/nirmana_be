@@ -7,6 +7,7 @@ Rails.application.routes.draw do
       post 'sign_up', to: 'auth#sign_up'
       post 'sign_in', to: 'auth#sign_in'
       post 'verify_email', to: 'auth#verify_email'
+      post 'change_password', to: 'auth#change_password'
     end
   end
 

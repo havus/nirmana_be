@@ -1,4 +1,6 @@
 class Api::V1::AuthController < ApplicationController
+  before_action :authenticate_user!, only: [:change_password]
+
   # POST /api/v1/sign_up
   def sign_up
     result = UserRegistrationService.call(user_params)
@@ -86,6 +88,35 @@ class Api::V1::AuthController < ApplicationController
     else
       render json: {
         error: result.errors.first || 'Failed to verify email'
+      }, status: :unprocessable_entity
+    end
+  end
+
+  # POST /api/v1/change_password
+  def change_password
+    result = PasswordChangeService.call(
+      user: current_user,
+      current_password: params[:current_password],
+      new_password: params[:new_password],
+      new_password_confirmation: params[:new_password_confirmation]
+    )
+
+    if result.success?
+      render json: {
+        message: 'Password changed successfully',
+        user: {
+          id: result.user.id,
+          uid: result.user.uid,
+          email: result.user.email,
+          first_name: result.user.first_name,
+          last_name: result.user.last_name,
+          email_verified: result.user.email_verified?
+        }
+      }, status: :ok
+    else
+      render json: {
+        error: 'Password change failed',
+        details: result.errors
       }, status: :unprocessable_entity
     end
   end

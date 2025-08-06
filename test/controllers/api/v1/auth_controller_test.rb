@@ -131,4 +131,98 @@ class Api::V1::AuthControllerTest < ActionDispatch::IntegrationTest
     response_body = JSON.parse(response.body)
     assert_equal 'Email and password are required', response_body['error']
   end
+
+  test "should change password with valid credentials" do
+    # Create a user session for authentication
+    session = UserSession.create_for_user(@user)
+    headers = { 'Authorization' => "Bearer #{session.session_token}" }
+
+    post api_v1_change_password_path, 
+         params: { 
+           current_password: 'password123',
+           new_password: 'NewPassword456',
+           new_password_confirmation: 'NewPassword456'
+         },
+         headers: headers
+
+    assert_response :ok
+
+    response_body = JSON.parse(response.body)
+    assert_equal 'Password changed successfully', response_body['message']
+    assert_equal @user.id, response_body['user']['id']
+
+    # Verify old password no longer works and new password works
+    @user.reload
+    assert_not @user.authenticate('password123')
+    assert @user.authenticate('NewPassword456')
+  end
+
+  test "should reject password change with incorrect current password" do
+    session = UserSession.create_for_user(@user)
+    headers = { 'Authorization' => "Bearer #{session.session_token}" }
+
+    post api_v1_change_password_path,
+         params: {
+           current_password: 'wrongpassword',
+           new_password: 'NewPassword456',
+           new_password_confirmation: 'NewPassword456'
+         },
+         headers: headers
+
+    assert_response :unprocessable_entity
+
+    response_body = JSON.parse(response.body)
+    assert_equal 'Password change failed', response_body['error']
+    assert_includes response_body['details'], 'Current password is incorrect'
+  end
+
+  test "should reject password change with mismatched confirmation" do
+    session = UserSession.create_for_user(@user)
+    headers = { 'Authorization' => "Bearer #{session.session_token}" }
+
+    post api_v1_change_password_path,
+         params: {
+           current_password: 'password123',
+           new_password: 'NewPassword456',
+           new_password_confirmation: 'DifferentPassword'
+         },
+         headers: headers
+
+    assert_response :unprocessable_entity
+
+    response_body = JSON.parse(response.body)
+    assert_equal 'Password change failed', response_body['error']
+    assert_includes response_body['details'], 'New password and confirmation do not match'
+  end
+
+  test "should reject password change without authentication" do
+    post api_v1_change_password_path,
+         params: {
+           current_password: 'password123',
+           new_password: 'NewPassword456',
+           new_password_confirmation: 'NewPassword456'
+         }
+
+    assert_response :unauthorized
+
+    response_body = JSON.parse(response.body)
+    assert_equal 'Authorization token required', response_body['error']
+  end
+
+  test "should reject password change with invalid token" do
+    headers = { 'Authorization' => 'Bearer invalid_token' }
+
+    post api_v1_change_password_path,
+         params: {
+           current_password: 'password123',
+           new_password: 'NewPassword456',
+           new_password_confirmation: 'NewPassword456'
+         },
+         headers: headers
+
+    assert_response :unauthorized
+
+    response_body = JSON.parse(response.body)
+    assert_equal 'Invalid or expired token', response_body['error']
+  end
 end
