@@ -1,4 +1,4 @@
-class PasswordResetService
+class ForgotPasswordService
   class Result
     attr_reader :success, :user, :reset_token, :errors
 
@@ -23,6 +23,7 @@ class PasswordResetService
   end
 
   def call
+    return failure_result(['Email is required']) if @email.blank?
     return failure_result(['User not found']) unless user
     return failure_result(['Account is deactivated']) unless user.active?
 
@@ -32,7 +33,7 @@ class PasswordResetService
       success_result
     end
   rescue StandardError => e
-    Rails.logger.error "PasswordResetService failed: #{e.message}"
+    Rails.logger.error "ResetPasswordService failed: #{e.message}"
     failure_result(['Password reset failed. Please try again.'])
   end
 

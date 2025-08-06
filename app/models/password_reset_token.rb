@@ -6,8 +6,7 @@ class PasswordResetToken < ApplicationRecord
   validates :expires_at, presence: true
 
   # Callbacks
-  before_create :generate_token
-  before_create :set_expiration
+  before_validation :generate_token, :set_expiration
 
   # Scopes
   scope :valid, -> { where('expires_at > ? AND used_at IS NULL', Time.current) }

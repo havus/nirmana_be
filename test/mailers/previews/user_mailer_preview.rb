@@ -14,4 +14,19 @@ class UserMailerPreview < ActionMailer::Preview
 
     UserMailer.email_verification(user, verification_token)
   end
+
+  def password_reset
+    user = User.new(
+      email: "john.doe@example.com",
+      first_name: "John",
+      last_name: "Doe"
+    )
+
+    reset_token = PasswordResetToken.new(
+      token: "sample_reset_token_123",
+      expires_at: 24.hours.from_now
+    )
+
+    UserMailer.password_reset(user, reset_token)
+  end
 end

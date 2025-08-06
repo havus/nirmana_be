@@ -225,4 +225,101 @@ class Api::V1::AuthControllerTest < ActionDispatch::IntegrationTest
     response_body = JSON.parse(response.body)
     assert_equal 'Invalid or expired token', response_body['error']
   end
+
+  test "should send forgot password email for existing user" do
+    post api_v1_forgot_password_path, params: { email: @user.email }
+
+    assert_response :ok
+
+    response_body = JSON.parse(response.body)
+    assert_equal 'If an account with that email exists, a password reset link has been sent.', response_body['message']
+
+    # Check that a password reset token was created
+    assert_not_nil PasswordResetToken.find_by(user: @user)
+  end
+
+  test "should return same message for non-existing user email" do
+    post api_v1_forgot_password_path, params: { email: 'nonexistent@example.com' }
+
+    assert_response :ok
+
+    response_body = JSON.parse(response.body)
+    assert_equal 'If an account with that email exists, a password reset link has been sent.', response_body['message']
+  end
+
+  test "should reject forgot password request without email" do
+    post api_v1_forgot_password_path, params: {}
+
+    assert_response :bad_request
+
+    response_body = JSON.parse(response.body)
+    assert_equal 'Email is required', response_body['error']
+  end
+
+  test "should reject forgot password request with blank email" do
+    post api_v1_forgot_password_path, params: { email: '' }
+
+    assert_response :bad_request
+
+    response_body = JSON.parse(response.body)
+    assert_equal 'Email is required', response_body['error']
+  end
+
+  test "should reset password with valid token" do
+    reset_token = PasswordResetToken.create_for_user(@user)
+
+    post api_v1_reset_password_path,
+         params: {
+           token: reset_token.token,
+           new_password: 'NewPassword456',
+           new_password_confirmation: 'NewPassword456'
+         }
+
+    assert_response :ok
+
+    response_body = JSON.parse(response.body)
+    assert_equal 'Password has been reset successfully', response_body['message']
+    assert_equal @user.id, response_body['user']['id']
+
+    # Verify new password works and old doesn't
+    @user.reload
+    assert @user.authenticate('NewPassword456')
+    assert_not @user.authenticate('password123')
+
+    # Verify token is used
+    reset_token.reload
+    assert reset_token.used?
+  end
+
+  test "should reject password reset with invalid token" do
+    post api_v1_reset_password_path,
+         params: {
+           token: 'invalid_token',
+           new_password: 'NewPassword456',
+           new_password_confirmation: 'NewPassword456'
+         }
+
+    assert_response :unprocessable_entity
+
+    response_body = JSON.parse(response.body)
+    assert_equal 'Password reset failed', response_body['error']
+    assert_includes response_body['details'], 'Invalid or expired reset token'
+  end
+
+  test "should reject password reset with mismatched passwords" do
+    reset_token = PasswordResetToken.create_for_user(@user)
+
+    post api_v1_reset_password_path,
+         params: {
+           token: reset_token.token,
+           new_password: 'NewPassword456',
+           new_password_confirmation: 'DifferentPassword'
+         }
+
+    assert_response :unprocessable_entity
+
+    response_body = JSON.parse(response.body)
+    assert_equal 'Password reset failed', response_body['error']
+    assert_includes response_body['details'], 'New password and confirmation do not match'
+  end
 end

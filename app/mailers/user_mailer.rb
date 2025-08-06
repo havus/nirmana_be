@@ -9,4 +9,15 @@ class UserMailer < ApplicationMailer
       subject: 'Please verify your email address'
     )
   end
+
+  def password_reset(user, reset_token)
+    @user = user
+    @reset_token = reset_token
+    @reset_url = "#{ENV.fetch('FRONTEND_URL', 'http://localhost:3000')}/reset-password?token=#{@reset_token.token}"
+
+    mail(
+      to: @user.email,
+      subject: 'Reset your password'
+    )
+  end
 end

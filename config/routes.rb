@@ -4,10 +4,14 @@ Rails.application.routes.draw do
   # API routes
   namespace :api do
     namespace :v1 do
-      post 'sign_up', to: 'auth#sign_up'
-      post 'sign_in', to: 'auth#sign_in'
-      post 'verify_email', to: 'auth#verify_email'
-      post 'change_password', to: 'auth#change_password'
+      namespace :auth do
+        post 'sign_up', to: 'sign_up#create'
+        post 'sign_in', to: 'sign_in#create'
+        post 'verify_email', to: 'verify_email#create'
+        post 'forgot_password', to: 'forgot_password#create'
+        post 'reset_password', to: 'reset_password#create'
+        post 'change_password', to: 'change_password#create'
+      end
     end
   end
 

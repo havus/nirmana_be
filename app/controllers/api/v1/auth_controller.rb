@@ -92,6 +92,60 @@ class Api::V1::AuthController < ApplicationController
     end
   end
 
+  # POST /api/v1/forgot_password
+  def forgot_password
+    email = params[:email]
+
+    if email.blank?
+      render json: {
+        error: 'Email is required'
+      }, status: :bad_request
+      return
+    end
+
+    result = ForgotPasswordService.call(email: email)
+
+    if result.success?
+      render json: {
+        message: 'If an account with that email exists, a password reset link has been sent.'
+      }, status: :ok
+    else
+      # For security reasons, we don't reveal if the email exists or not
+      # We return the same message regardless of success or failure
+      render json: {
+        message: 'If an account with that email exists, a password reset link has been sent.'
+      }, status: :ok
+    end
+  end
+
+  # POST /api/v1/reset_password
+  def reset_password
+    result = ResetPasswordService.call(
+      token: params[:token],
+      new_password: params[:new_password],
+      new_password_confirmation: params[:new_password_confirmation]
+    )
+
+    if result.success?
+      render json: {
+        message: 'Password has been reset successfully',
+        user: {
+          id: result.user.id,
+          uid: result.user.uid,
+          email: result.user.email,
+          first_name: result.user.first_name,
+          last_name: result.user.last_name,
+          email_verified: result.user.email_verified?
+        }
+      }, status: :ok
+    else
+      render json: {
+        error: 'Password reset failed',
+        details: result.errors
+      }, status: :unprocessable_entity
+    end
+  end
+
   # POST /api/v1/change_password
   def change_password
     result = PasswordChangeService.call(
