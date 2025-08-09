@@ -24,6 +24,7 @@ class UserRegistrationService
 
   # Attributes
   attribute :email, :string
+  attribute :username, :string
   attribute :password, :string
   attribute :password_confirmation, :string
   attribute :first_name, :string
@@ -32,6 +33,7 @@ class UserRegistrationService
 
   # Validations
   validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
+  validates :username, presence: true
   validates :password, presence: true, length: { minimum: 6 }
   validates :password_confirmation, presence: true
   validate :passwords_match
@@ -65,11 +67,13 @@ class UserRegistrationService
   def create_user!
     @user = User.create!(
       email: email,
+      username: username,
       password: password,
       password_confirmation: password_confirmation,
       first_name: first_name,
       last_name: last_name,
-      phone: phone
+      phone: phone,
+      status: :active,
     )
   end
 

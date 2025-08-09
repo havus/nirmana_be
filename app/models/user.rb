@@ -8,14 +8,17 @@ class User < ApplicationRecord
   has_many :password_reset_tokens, dependent: :destroy
   has_many :email_verification_tokens, dependent: :destroy
   has_many :user_sessions, dependent: :destroy
+  has_many :projects, dependent: :destroy
 
   # Validations
   validates :email, presence: true, uniqueness: { case_sensitive: false }, 
             format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :uid, presence: true, uniqueness: true
+  validates :username, presence: true, uniqueness: true
   validates :first_name, length: { maximum: 100 }
   validates :last_name, length: { maximum: 100 }
   validates :phone, length: { maximum: 20 }
+  validates :description, length: { maximum: 1000 }
   validates :avatar_url, length: { maximum: 500 }
 
   # Callbacks

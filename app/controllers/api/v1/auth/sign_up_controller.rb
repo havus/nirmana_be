@@ -9,6 +9,7 @@ class Api::V1::Auth::SignUpController < ApplicationController
         user: {
           id: result.user.id,
           uid: result.user.uid,
+          username: result.user.username,
           email: result.user.email,
           first_name: result.user.first_name,
           last_name: result.user.last_name,
@@ -26,6 +27,6 @@ class Api::V1::Auth::SignUpController < ApplicationController
   private
 
   def user_params
-    params.require(:user).permit(:email, :password, :password_confirmation, :first_name, :last_name, :phone)
+    params.require(:user).permit(:username, :email, :password, :password_confirmation, :first_name, :last_name, :phone)
   end
 end

@@ -1,5 +1,5 @@
 class CreateUserSessions < ActiveRecord::Migration[8.0]
-  def change
+  def up
     create_table :user_sessions do |t|
       t.references :user, null: false, foreign_key: { on_delete: :cascade, to_table: :users }
       t.string :session_token, null: false, limit: 255
@@ -13,5 +13,9 @@ class CreateUserSessions < ActiveRecord::Migration[8.0]
 
     add_index :user_sessions, :session_token, unique: true
     add_index :user_sessions, :expires_at
+  end
+
+  def down
+    drop_table :user_sessions
   end
 end

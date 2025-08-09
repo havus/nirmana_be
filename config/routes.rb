@@ -12,6 +12,13 @@ Rails.application.routes.draw do
         post 'reset_password', to: 'reset_password#create'
         post 'change_password', to: 'change_password#create'
       end
+
+      # Users
+      get 'users/:uid', to: 'users#show'
+      put 'users/:uid', to: 'users#update'
+
+      # Projects
+      resources :projects, only: [:index, :show, :create, :update, :destroy]
     end
   end
 

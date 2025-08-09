@@ -3,6 +3,7 @@ require 'test_helper'
 class Api::V1::AuthControllerTest < ActionDispatch::IntegrationTest
   setup do
     @user = User.create!(
+      username: 'johndoe',
       email: 'test@example.com',
       password: 'password123',
       password_confirmation: 'password123',
@@ -70,9 +71,9 @@ class Api::V1::AuthControllerTest < ActionDispatch::IntegrationTest
   end
 
   # Sign In Tests
-  test "should sign in with valid credentials" do
+  test "should sign in with valid email credentials" do
     post api_v1_sign_in_path, params: { 
-      email: @user.email, 
+      login: @user.email, 
       password: 'password123' 
     }
     
@@ -86,9 +87,26 @@ class Api::V1::AuthControllerTest < ActionDispatch::IntegrationTest
     assert_not_nil response_body['session']['expires_at']
   end
 
-  test "should return error for invalid email" do
+  test "should sign in with valid username credentials" do
     post api_v1_sign_in_path, params: { 
-      email: 'nonexistent@example.com', 
+      login: @user.username, 
+      password: 'password123' 
+    }
+    
+    assert_response :ok
+    
+    response_body = JSON.parse(response.body)
+    assert_equal 'Signed in successfully', response_body['message']
+    assert_equal @user.id, response_body['user']['id']
+    assert_equal @user.username, response_body['user']['username']
+    assert_equal @user.email, response_body['user']['email']
+    assert_not_nil response_body['session']['token']
+    assert_not_nil response_body['session']['expires_at']
+  end
+
+  test "should return error for invalid login" do
+    post api_v1_sign_in_path, params: { 
+      login: 'nonexistent@example.com', 
       password: 'password123' 
     }
     
@@ -100,7 +118,7 @@ class Api::V1::AuthControllerTest < ActionDispatch::IntegrationTest
 
   test "should return error for invalid password" do
     post api_v1_sign_in_path, params: { 
-      email: @user.email, 
+      login: @user.email, 
       password: 'wrongpassword' 
     }
     
@@ -110,7 +128,7 @@ class Api::V1::AuthControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'Invalid credentials', response_body['error']
   end
 
-  test "should return error for missing email" do
+  test "should return error for missing login" do
     post api_v1_sign_in_path, params: { 
       password: 'password123' 
     }
@@ -118,18 +136,18 @@ class Api::V1::AuthControllerTest < ActionDispatch::IntegrationTest
     assert_response :bad_request
     
     response_body = JSON.parse(response.body)
-    assert_equal 'Email and password are required', response_body['error']
+    assert_equal 'Login and password are required', response_body['error']
   end
 
   test "should return error for missing password" do
     post api_v1_sign_in_path, params: { 
-      email: @user.email 
+      login: @user.email 
     }
     
     assert_response :bad_request
     
     response_body = JSON.parse(response.body)
-    assert_equal 'Email and password are required', response_body['error']
+    assert_equal 'Login and password are required', response_body['error']
   end
 
   test "should change password with valid credentials" do

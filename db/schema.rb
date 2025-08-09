@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_06_154731) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_08_170154) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -39,6 +39,18 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_06_154731) do
     t.index ["user_id"], name: "index_password_reset_tokens_on_user_id"
   end
 
+  create_table "projects", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "name", limit: 255, null: false
+    t.string "version", limit: 10, default: "1.0.0"
+    t.integer "visibility", default: 0, null: false
+    t.jsonb "board_config", null: false
+    t.jsonb "nails", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_projects_on_user_id"
+  end
+
   create_table "user_sessions", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "session_token", limit: 255, null: false
@@ -55,11 +67,13 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_06_154731) do
 
   create_table "users", force: :cascade do |t|
     t.string "uid", limit: 36, null: false
+    t.string "username", limit: 50, null: false
     t.string "email", limit: 255, null: false
     t.string "password_digest", null: false
     t.string "first_name", limit: 100
     t.string "last_name", limit: 100
     t.string "phone", limit: 20
+    t.text "description"
     t.date "date_of_birth"
     t.string "avatar_url", limit: 500
     t.text "bio"
@@ -71,9 +85,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_06_154731) do
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["status"], name: "index_users_on_status"
     t.index ["uid"], name: "index_users_on_uid", unique: true
+    t.index ["username"], name: "index_users_on_username", unique: true
   end
 
   add_foreign_key "email_verification_tokens", "users", on_delete: :cascade
   add_foreign_key "password_reset_tokens", "users", on_delete: :cascade
+  add_foreign_key "projects", "users"
   add_foreign_key "user_sessions", "users", on_delete: :cascade
 end

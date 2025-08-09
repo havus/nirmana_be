@@ -14,19 +14,19 @@ class UserLoginService
     end
   end
 
-  def self.call(email:, password:, ip_address: nil, user_agent: nil)
-    new(email, password, ip_address, user_agent).call
+  def self.call(login:, password:, ip_address: nil, user_agent: nil)
+    new(login, password, ip_address, user_agent).call
   end
 
-  def initialize(email, password, ip_address, user_agent)
-    @email = email
+  def initialize(login, password, ip_address, user_agent)
+    @login = login
     @password = password
     @ip_address = ip_address
     @user_agent = user_agent
   end
 
   def call
-    return failure_result(['Email and password are required']) if @email.blank? || @password.blank?
+    return failure_result(['Login and password are required']) if @login.blank? || @password.blank?
     return failure_result(['Invalid credentials']) unless user&.authenticate(@password)
     return failure_result(['Account is deactivated']) unless user.active?
     
@@ -41,10 +41,22 @@ class UserLoginService
 
   private
 
-  attr_reader :email, :password, :ip_address, :user_agent
+  attr_reader :login, :password, :ip_address, :user_agent
 
   def user
-    @user ||= User.find_by(email: @email.downcase.strip)
+    @user ||= find_user_by_login(@login)
+  end
+
+  def find_user_by_login(login_value)
+    normalized_login = login_value.downcase.strip
+    
+    # Try to find by email first
+    user = User.find_by(email: normalized_login)
+    
+    # If not found by email, try by username
+    user ||= User.find_by(username: normalized_login)
+    
+    user
   end
 
   def create_session!

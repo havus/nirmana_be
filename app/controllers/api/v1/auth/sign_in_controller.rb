@@ -2,7 +2,7 @@ class Api::V1::Auth::SignInController < ApplicationController
   # POST /api/v1/auth/sign_in
   def create
     result = UserLoginService.call(
-      email: params[:email],
+      login: params[:login],
       password: params[:password],
       ip_address: request.remote_ip,
       user_agent: request.user_agent
@@ -14,6 +14,7 @@ class Api::V1::Auth::SignInController < ApplicationController
         user: {
           id: result.user.id,
           uid: result.user.uid,
+          username: result.user.username,
           email: result.user.email,
           first_name: result.user.first_name,
           last_name: result.user.last_name,
@@ -26,7 +27,7 @@ class Api::V1::Auth::SignInController < ApplicationController
       }, status: :ok
     else
       error = result.errors.first
-      status = error == 'Email and password are required' ? :bad_request : :unauthorized
+      status = error == 'Login and password are required' ? :bad_request : :unauthorized
       
       render json: {
         error: error || 'Failed to sign in'
